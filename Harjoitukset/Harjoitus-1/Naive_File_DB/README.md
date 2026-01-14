@@ -371,8 +371,7 @@ Selitä, miltä epäjohdonmukainen tila näyttäisi, jos ohjelma kaatuu sen jäl
 > Generoi rikkinäiset/epäjohdonmukaiset pääkirjat ja tarkastele niitä:
 >
 > ```bash
-> python scripts/generate_data.py --books 5000 --members 2000 --loans 4000 --out ./data \
->   --bad-refs 50 --double-checkout 50 --inconsistent 50 --schema-drift
+> python scripts/generate_data.py --books 5000 --members 2000 --loans 4000 --out ./data --bad-refs 50 --double-checkout 50 --inconsistent 50 --schema-drift
 > ```
 >
 > Avaa sitten CSV:t ja kuvaa, millaisia ongelmia niissä näkyy.
