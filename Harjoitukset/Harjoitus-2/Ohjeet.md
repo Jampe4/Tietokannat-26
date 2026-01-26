@@ -226,7 +226,7 @@ Käytä tätä tilaa (tai erillistä paperia):
 * Voit katsoa mallia kuvien liittämisestä markdown tiedostoon täältä: [Adding images in markdown](https://www.markdownguide.org/basic-syntax/#images-1)
 
 ```
-![ER Kaavio](C:\Users\kuuts\OneDrive\Desktop\Tietokannat\Näyttökuva 2026-01-26 191943.png)
+
 ```
 
 
