@@ -36,30 +36,27 @@ Alleviivaa substantiivit skenaariosta ja listaa ehdokasentiteetit alle:
 
 **Ehdokasentiteetit:**
 
-*
-*
-*
-*
-*
-*
-*
-
+* Kirja
+* kustantaja
+* Kirjoittaja
+* Jäsen
+* Kopio
+* Toimipiste
+* Lainaus
 ---
 
 ### **Vaihe 2 — Lopulliset entiteetit + yhden lauseen määritelmä**
 
 Valitse lopulliset entiteetit ja määrittele kukin yhdellä lauseella.
 
-| Entiteetti | Yhden lauseen määritelmä |
-| ---------- | ------------------------ |
-|            |                          |
-|            |                          |
-|            |                          |
-|            |                          |
-|            |                          |
-|            |                          |
-|            |                          |
-
+| Entiteetti | Yhden lauseen määritelmä
+| Kirja      | abstrakti kirja,ei fyysinen
+| Kustantaja | organisaatio joka julkaisee kirjoja
+| Kirjoittaja| Henkilö joka kirjoittaa kirjoja
+| Jäsen      | kirjautunut kirjaston jäsen, joka voi lainata kirjoja
+| kopio      | fyysinen kirja tietyssä toimipisteessä
+| lainaus    | tilanne/eventti
+| toimipiste | fyysinen kirjaston lokaatio
 ---
 
 ### **Vaihe 3 — Pääavainten valinta (tunnisteet)**
@@ -68,96 +65,105 @@ Ehdota kullekin entiteetille pääavain.
 
 | Entiteetti | Pääavain (PK) |
 | ---------- | ------------- |
-|            |               |
-|            |               |
-|            |               |
-|            |               |
-|            |               |
-|            |               |
-|            |               |
+| kirja      | kirja_id      |
+| kustantaja | kustantaja_id |
+| Kirjoittaja| kirjoittaja_id|
+| jäsen      | jäsen_id      |
+| kopio      | kopio_id      |
+| lainaus    | lainaus_id    |
+| toimipiste | toimipiste_id |
 
 > 💬 Pohdinta: Miksi nimet tai otsikot eivät yleensä ole hyviä pääavaimia?
 >
 > Vastauksesi:
+Nimet voivat toistua liian usein ja otsikot eivat kerro esim mikä kirja on kyseessä.
+oma päätelmä tossa
+saatan olla väärässäkin
 
----
 
 ### **Vaihe 4 — Keskeisten attribuuttien lisääminen**
 
 Listaa keskeiset attribuutit vaatimuksista (älä yli-analysoi — sisällytä vain tärkeimmät).
 
-#### (kirjoita entiteetin nimi tähän)
+#### (kirja)
 
-* PK:
+* PK: kirja_id
 * ## Muut attribuutit:
 
-  *
+  * nimi
+  * julkaisuvuosi
 
-#### (kirjoita entiteetin nimi tähän)
+#### (kustantaja)
 
-* PK:
+* PK: kustantaja_id
 * ## Muut attribuutit:
 
-  *
+  * kirja
 
-#### (kirjoita entiteetin nimi tähän)
+#### (kirjoittaja)
 
-* PK:
+* PK: kirjoittaja_id
 * ## Muut attribuutit:
 
-  *
-  *
+  * kirja
+  
 
-#### (kirjoita entiteetin nimi tähän)
+#### (jäsen)
 
-* PK:
+* PK: jäsen_id
 * ## Muut attribuutit:
 
-#### (kirjoita entiteetin nimi tähän)
+* nimi
+* sähköposti
+* liittymispäivä
 
-* PK:
+#### (kopio)
+
+* PK: kopio_id
 * ## Muut attribuutit:
 
-#### (kirjoita entiteetin nimi tähän)
+* nimi
+* julkaisuvuosi
 
-* PK:
+#### (lainaus)
+
+* PK: lainaus_id
 * ## Muut attribuutit:
 
-  *
+  * lainauspäivä
+  * palautuspäivä
+  * eräpäivä
 
-#### (kirjoita entiteetin nimi tähän)
+#### (toimipiste)
 
-* PK:
+* PK: toimipiste_id
 * ## Muut attribuutit:
 
-  *
-  *
+  * nimi
+  * osoite
 
----
 
 ### **Vaihe 5 — Relaatioiden tunnistaminen (verbien metsästys)**
 
 Kirjoita suhteet muodossa: **Entiteetti — verbi — Entiteetti**
 
-*
-*
-*
-*
-*
-
----
+* Kirja on toimipisteellä.
+* Jäsen lainaa kirjan.
+* Jäsen palauttaa kirjan.
+* Kustantaja kustantaa kirjan.
+* Kirjoittaja kirjoittaaa kirjan.
 
 ### **Vaihe 6 — Kardinaliteetin määrittäminen (1:1, 1:N, M:N)**
 
 Täytä alla oleva taulukko.
 
-| Suhde | Kardinaliteetti | Perustelu (lyhyesti) |
-| ----- | --------------- | -------------------- |
-|       |                 |                      |
-|       |                 |                      |
-|       |                 |                      |
-|       |                 |                      |
-|       |                 |                      |
+| Suhde    | Kardinaliteetti | Perustelu (lyhyesti) |
+| -----    | --------------- | -------------------- |
+|Kirja     | Kirjasto        |Kirjastossa on paljon kirjoja  |
+|Lainaus   | Toimipiste      |Lainataan paljon toimipisteellä|
+|kirjailija| Kirja        |Kirjailija kirjoittaa kirjoja  |
+|opiskelija| Koulu        |Opiskelijat opiskelee koulussa |
+|Lehmä     | maito        |lehmät tuottavat maitoa        |
 
 ---
 
@@ -167,28 +173,30 @@ Vastaa seuraaviin kysymyksiin:
 
 1. **Pitääkö jokaisella kirjalla olla kustantaja?**
 
-   * [ ] Kyllä (pakollinen) [ ] Ei (valinnainen)
-   * Miksi?
+   * [X] Kyllä (pakollinen) [ ] Ei (valinnainen)
+   * Miksi? Jokaisella kirjalla on täsmälleen yksi kustantaja
 
 2. **Voiko kustantaja olla olemassa ilman yhtään kirjaa?**
 
-   * [ ] Kyllä [ ] Ei
-   * Miksi?
+   * [X] Kyllä [ ] Ei
+   * Miksi? Kustantajalla voi olla monta kirjaa. Mutta ei mainita pitääkö kustantajalla olla kirjoja. 
+   Joten kirjattomat kustantajat ovat mahdollisia
 
 3. **Pitääkö jokaisella kirjalla olla vähintään yksi kirjoittaja?**
 
-   * [ ] Kyllä [ ] Ei
-   * Miksi?
+   * [X] Kyllä [ ] Ei
+   * Miksi? kirjalla voi olla yksi tai useampi. joten kaikilla kirjoilla tulee olla ainakin yksi kirjoittaja
 
 4. **Pitääkö jokaisen kirjan kopion kuulua johonkin toimipisteeseen?**
 
-   * [ ] Kyllä [ ] Ei
-   * Miksi?
+   * [X] Kyllä [ ] Ei
+   * Miksi? Jokainen fyysinen kirjan kopio kuuluu täsmälleen yhteen toimipisteeseen.
 
 5. **Onko palautuspäivä pakollinen vai valinnainen Lainauksessa?**
 
-   * [ ] Pakollinen [ ] Valinnainen
-   * Miksi?
+   * [ ] Pakollinen [X] Valinnainen
+   * Miksi? Palautuspäivä voi olla tyhjä
+  
 
 ---
 
@@ -221,13 +229,13 @@ Käytä tätä tilaa (tai erillistä paperia):
 [ Lisää ER-kaaviosi tähän ]
 ```
 
----
+
 
 ### **Vaihe 9 — Lisää relaatiot**
 
 Lisää nimetyt viivat entiteettien välille → selitä suhteet entiteettien välillä.
 
----
+
 
 ### **Vaihe 10 — Merkitse kardinaliteetti ja valinnaisuus**
 
@@ -246,7 +254,7 @@ Merkitse ✔ tai ✘ ja selitä lyhyesti.
 
 1. Voiko jäsen lainata useita kirjoja ajan myötä?
 
-   * [ ] Kyllä [ ] Ei
+   * [] Kyllä [ ] Ei
    * Miksi?
 
 2. Voiko samaa kirjakappaletta lainata useita kertoja eri kuukausina?
