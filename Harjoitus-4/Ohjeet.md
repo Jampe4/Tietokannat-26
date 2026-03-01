@@ -43,19 +43,19 @@ Vastaa seuraaviin **`medal_results`** -taulun osalta. Käytä apuna yllä olevaa
 **A1.1** **Päivitysanomalia** — Jos Mika Virtasen nimi korjataan (esim. oikeinkirjoitus). Mitä tässä suunnittelussa on tehtävä? Mitä menee vikaan, jos päivitämme vain yhden rivin?
 
 _Vastauksesi:_
-
+Muut rivit eivät päivity.
 ---
 
 **A1.2** **Lisäysanomalia** — Haluamme lisätä uuden tapahtuman "Viestikilpailu" maastohiihtoon, paikalle Mountain Resort, Zhangjiakou, ennen kuin kukaan urheilija on kilpaillut siinä. Onnistuuko tämä tällä yhdellä taululla? Selitä lyhyesti.
 
 _Vastauksesi:_
-
+Ei onnistu. Nimi toistuu ja esiintyy vain tuloksen yhteydessä, joten sellaista tapahtumaa ei voida luoda ennen kuin ainakin yksi tulos on julkinen.
 ---
 
 **A1.3** **Poistoanomalia** — Jos poistamme Saralle Niemelle naisten pujottelun tuloksen rivin, mitä tietoa menetämme sen yhden mitalituloksen lisäksi?
 
 _Vastauksesi:_
-
+menetämme tapahtumaan, lajiin ja tapahtumapaikkaan liittyvät tiedot
 ---
 
 ### A2 — Ensimmäinen normaalimuoto (1NF)
@@ -65,13 +65,13 @@ Taululla `medal_results` on atomiarvot jokaisessa solussa ja pääavain `(athlet
 **A2.1** Onko tämä taulu 1NF:ssä? (Kyllä/Ei ja yksi lause miksi.)
 
 _Vastauksesi:_
-
+Kyllä. Koska sillä on atomiarvot, yksilölliset rivit ja yhtenäiset sarakkeet.
 ---
 
 **A2.2** Oletetaan, että olisimme sen sijaan sarake `events_won`, jossa useita arvoja yhdessä solussa, esim. `"Men's Downhill, Men's 50km"`. Miksi se **ei** olisi 1NF?
 
 _Vastauksesi:_
-
+Koska ei saa olla, montaa tietoa yhdessä solussa.
 ---
 
 ### A3 — Toinen normaalimuoto (2NF)
@@ -81,19 +81,41 @@ _Vastauksesi:_
 **A3.1** Mitkä attribuutit riippuvat **vain** `athlete_id`:stä? Mitkä **vain** `event_id`:stä? Mitkä **molemmista** (koko avaimesta)?
 
 _Vastauksesi:_
+Riippuu athelet_id = athelete_name, country_code ja country_name
 
+Riippuu event_id = event_name, sport_name, venue_name ja city
+
+molemmista = medal_type
 ---
 
 **A3.2** Täyttääkö `medal_results` siis 2NF:n? (Kyllä/Ei ja yksi lause.)
 
 _Vastauksesi:_
-
+Ei. Koska taulussa on osittaisia riippuvuuksia, eikä pelkästään riipu yhtenäisestä pääavaimesta.
 ---
 
 **A3.3** 2NF:ään päästään jakamalla erillisiin tauluihin. Listaa **taulut**, jotka sinulla olisi, ja kunkin taulun **pääavain**. (Toteutat nämä osassa B.)
 
 _Vastauksesi:_
 
+countries
+country_id (PK)
+
+athletes
+athlete_id (PK)
+
+sports
+sport_id (PK)
+
+venues
+venue_id (PK)
+
+events
+event_id (PK)
+
+results
+athelete_id
+event_id
 ---
 
 ### A4 — Kolmas normaalimuoto (3NF)
@@ -103,13 +125,22 @@ Oletetaan, että tapahtumat olisi jaettu tauluun **`events(event_id, event_name,
 **A4.1** Mikä **transitiivinen riippuvuus** siellä on? (Mikä ei-avainsarake riippuu toisesta ei-avainsarakkeesta?)
 
 _Vastauksesi:_
-
+city riippuu venue_namesta ei suoraan event_id:stä
 ---
 
 **A4.2** Miten korjaamme sen 3NF:ään? (Nimeä taulut: esim. yksi venues-, yksi events-taulu, jossa vain venue_id.)
 
 _Vastauksesi:_
+venues
+venue_id (PK)
+venue_name
+city
 
+events
+event_id (PK)
+event_name
+sport_id (FK)
+venue_id (FK)
 ---
 
 ### A5 — Milloin denormalisointi voi olla hyväksyttävää (lyhyt)
@@ -117,7 +148,7 @@ _Vastauksesi:_
 Kerro **yksi** tilanne, jossa denormalisointia käytetään joskus redundanssiriski huolimatta.
 
 _Vastauksesi:_
-
+jos kaivataan suorituskykyä 
 ---
 
 ## OSA B — Normalisoi 3NF:ään transaktioiden avulla
@@ -137,8 +168,63 @@ Aja CREATE-lauseesi **transaktion sisällä**: `BEGIN;` … CREATE TABLE -lausee
 ```sql
 BEGIN;
 
--- CREATE TABLE countries; ... CREATE TABLE results; tähän
+-- 
 
+CREATE TABLE countries (
+    country_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    country_code VARCHAR(10) UNIQUE NOT NULL,
+    country_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE sports (
+    sport_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sport_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE venues (
+    venue_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    venue_name VARCHAR(150) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    UNIQUE (venue_name, city)
+);
+
+CREATE TABLE athletes (
+    athlete_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    full_name VARCHAR(150) NOT NULL,
+    country_id INTEGER NOT NULL,
+    email VARCHAR(150),
+    CONSTRAINT fk_athlete_country
+        FOREIGN KEY (country_id)
+        REFERENCES countries(country_id)
+);
+
+CREATE TABLE events (
+    event_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    event_name VARCHAR(150) NOT NULL,
+    sport_id INTEGER NOT NULL,
+    venue_id INTEGER NOT NULL,
+    CONSTRAINT fk_event_sport
+        FOREIGN KEY (sport_id)
+        REFERENCES sports(sport_id),
+    CONSTRAINT fk_event_venue
+        FOREIGN KEY (venue_id)
+        REFERENCES venues(venue_id)
+);
+
+CREATE TABLE results (
+    athlete_id INTEGER NOT NULL,
+    event_id INTEGER NOT NULL,
+    medal_type VARCHAR(10) NOT NULL,
+    PRIMARY KEY (athlete_id, event_id),
+    CONSTRAINT fk_result_athlete
+        FOREIGN KEY (athlete_id)
+        REFERENCES athletes(athlete_id),
+    CONSTRAINT fk_result_event
+        FOREIGN KEY (event_id)
+        REFERENCES events(event_id),
+    CONSTRAINT chk_medal_type
+        CHECK (medal_type IN ('gold', 'silver', 'bronze'))
+);
 
 COMMIT;
 ```
@@ -148,7 +234,7 @@ COMMIT;
 **B1.2** Miksi normalisoidussa suunnittelussa taululla **events** on `venue_id` (viiteavain) eikä `venue_name` ja `city`? Yksi lause.
 
 _Vastauksesi:_
-
+Koska venue_name ja city kuuluvat venues-tauluun ja venue_id viiteavaimena estää redundanssin ja 3NF:n rikkomisen.
 ---
 
 ### B2 — Siirrä data transaktion avulla
@@ -169,16 +255,57 @@ Kirjoita migraatiosi (kaikki INSERTit) alla olevaan lohkoon. Käytä koko migraa
 ```sql
 BEGIN;
 
--- 1. INSERT INTO countries ...
--- 2. INSERT INTO athletes ... (käytä OVERRIDING SYSTEM VALUE athlete_id:lle)
--- 3. INSERT INTO sports ...
--- 4. INSERT INTO venues ...
--- 5. INSERT INTO events ... (käytä OVERRIDING SYSTEM VALUE event_id:lle, liitä sports- ja venues-tauluihin)
--- 6. INSERT INTO results ...
+-- B2.1 Migraatio
 
--- Tarkista ennen COMMIT:iä:
--- SELECT COUNT(*) FROM results;  -- pitäisi olla 8
--- SELECT COUNT(*) FROM athletes;  -- pitäisi olla 6
+-- 1. Countries
+INSERT INTO countries (country_code, country_name)
+SELECT DISTINCT country_code, country_name
+FROM medal_results;
+
+-- 2. Athletes (säilytetään alkuperäinen athlete_id)
+INSERT INTO athletes (athlete_id, full_name, country_id)
+OVERRIDING SYSTEM VALUE
+SELECT DISTINCT
+    m.athlete_id,
+    m.athlete_name,
+    c.country_id
+FROM medal_results m
+JOIN countries c
+    ON m.country_code = c.country_code;
+
+-- 3. Sports
+INSERT INTO sports (sport_name)
+SELECT DISTINCT sport_name
+FROM medal_results;
+
+-- 4. Venues
+INSERT INTO venues (venue_name, city)
+SELECT DISTINCT venue_name, city
+FROM medal_results;
+
+-- 5. Events (säilytetään alkuperäinen event_id)
+INSERT INTO events (event_id, event_name, sport_id, venue_id)
+OVERRIDING SYSTEM VALUE
+SELECT DISTINCT
+    m.event_id,
+    m.event_name,
+    s.sport_id,
+    v.venue_id
+FROM medal_results m
+JOIN sports s
+    ON m.sport_name = s.sport_name
+JOIN venues v
+    ON m.venue_name = v.venue_name
+   AND m.city = v.city;
+
+-- 6. Results
+INSERT INTO results (athlete_id, event_id, medal_type)
+SELECT athlete_id, event_id, medal_type
+FROM medal_results;
+
+-- Tarkista ennen COMMIT:
+SELECT COUNT(*) FROM results;   -- pitäisi olla 8
+SELECT COUNT(*) FROM athletes;  -- pitäisi olla 6
 
 COMMIT;   -- tai ROLLBACK; jos jotain on vialla
 ```
@@ -188,7 +315,7 @@ COMMIT;   -- tai ROLLBACK; jos jotain on vialla
 **B2.2** Miksi on tärkeää ajaa migraatio transaktion sisällä? Yksi lause.
 
 _Vastauksesi:_
-
+Jotta tietokanta pysyy kunnossa, jos jokin välivaihe epäonnistuu.
 ---
 
 ### B3 — Poista vanha taulu (transaktion sisällä)
@@ -215,21 +342,24 @@ Käytä **normalisoitua** talviolympiatietokantaa (countries, athletes, sports, 
 
 **C1.1** Lisää tai päivitä urheilijan, jolla `athlete_id = 2` (Sara Niemi), sähköpostiksi `sara.niemi@olympics.fi`. Käytä `WHERE`-ehtoa `athlete_id`:lle.
 
-_Itsetarkistus: `SELECT full_name, email FROM athletes WHERE athlete_id = 2;` näyttää uuden sähköpostin._
+_Itsetarkistus: `SELECT full_name, email FROM athletes WHERE athlete_id = 2;` näyttää uuden sähköpostin._ (KYLLÄ)
 
 ```sql
-
-
+UPDATE athletes
+SET email = 'sara.niemi@olympics.fi'
+WHERE athlete_id = 2;
 ```
 
 ---
 
 **C1.2** Päivitä **kaikki** tapahtumat, joilla on `venue_id = 1`, käyttämään `venue_id = 3`. Käytä `WHERE venue_id = 1`.
 
-_Itsetarkistus: Yhtään tapahtumaa ei pitäisi olla venue_id = 1 päivityksen jälkeen._
+_Itsetarkistus: Yhtään tapahtumaa ei pitäisi olla venue_id = 1 päivityksen jälkeen._ (Ei näytä rivejä)
 
 ```sql
-
+UPDATE events
+SET venue_id = 3
+WHERE venue_id = 1;
 
 ```
 
@@ -238,17 +368,19 @@ _Itsetarkistus: Yhtään tapahtumaa ei pitäisi olla venue_id = 1 päivityksen j
 **C1.3** (Turvallisuus) Ennen kuin ajat UPDATE:n, joka koskee useita rivejä, mitä pitäisi tehdä ensin? Yksi lause.
 
 _Vastauksesi:_
-
+Ajetaan ensin SELECT samalla WHERE-ehdolla ja varmistetaan, että päivitettävät rivit ovat oikeat.
 ---
 
 ### C2 — DELETE
 
 **C2.1** Poista **yksi** tulos: rivi, jolla `athlete_id = 5` ja `event_id = 5` (James Chen, pariluistelu). Käytä `WHERE`-ehtoa molemmilla sarakkeilla.
 
-_Itsetarkistus: `SELECT * FROM results;` pitäisi näyttää 7 riviä._
+_Itsetarkistus: `SELECT * FROM results;` pitäisi näyttää 7 riviä._ (Kyllä)
 
 ```sql
-
+DELETE FROM results
+WHERE athlete_id = 5
+  AND event_id = 5;
 
 ```
 
@@ -257,7 +389,7 @@ _Itsetarkistus: `SELECT * FROM results;` pitäisi näyttää 7 riviä._
 **C2.2** Jos haluaisimme poistaa kaikki urheilijan 3 tulokset, ajaisimme `DELETE FROM results WHERE athlete_id = 3;`. Ennen sitä mitä pitäisi ajaa ensin ja miksi?
 
 _Vastauksesi:_
-
+Ajetaan ensin SELECT samalla WHERE-ehdolla ja varmmistetaan, että ollaan poistamassa oikeat rivit, eikä muuta ylimääräistä.
 ---
 
 ### C3 — Transaktiot (BEGIN, COMMIT)
@@ -271,7 +403,16 @@ Tarvitset uuden `athlete_id`:n tulostariviä varten (esim. käytä ensimmäisen 
 
 ```sql
 BEGIN;
+-- 1. Lisää uusi urheilija
+INSERT INTO athletes (full_name, country_id, email)
+VALUES ('Liisa Korhonen', 1, NULL)
+RETURNING athlete_id;
 
+-- Oleta että palautunut athlete_id on esim. 7
+-- Käytä sitä seuraavassa INSERTissä
+
+INSERT INTO results (athlete_id, event_id, medal_type)
+VALUES (currval(pg_get_serial_sequence('athletes','athlete_id')), 4, 'bronze');
 
 COMMIT;
 ```
@@ -281,7 +422,7 @@ COMMIT;
 **C3.2** Yhdellä lauseella: miksi on hyödyllistä laittaa nämä kaksi INSERTiä yhteen transaktioon?
 
 _Vastauksesi:_
-
+Jotta molemmat lisäykset onnistuvat yhdessä tai kumpikaan ei tallennu, jolloin tietokanta pysyy eheänä.
 ---
 
 ### C4 — Rollback
@@ -291,8 +432,13 @@ _Vastauksesi:_
 ```sql
 BEGIN;
 
+UPDATE athletes
+SET email = 'rollback_test@test.com'
+WHERE athlete_id = 1;
 
 ROLLBACK;
+
+SELECT email FROM athletes WHERE athlete_id = 1;
 ```
 
 ---
@@ -300,7 +446,7 @@ ROLLBACK;
 **C4.2** Yhdellä lauseella: mitä ROLLBACK tekee viimeisestä BEGINistä lähtien tehdyille muutoksille?
 
 _Vastauksesi:_
-
+ROLLBACK peruuttaa kaikki muutokset viimeisestä BEGIN-komennosta lähtien.
 ---
 
 ### C5 — Eristystaso (johdanto)
@@ -311,7 +457,7 @@ _Vastauksesi:_
 BEGIN;
 SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
-
+SELECT * FROM athletes;
 COMMIT;
 ```
 
@@ -320,7 +466,7 @@ COMMIT;
 **C5.2** Milloin voisit valita **REPEATABLE READ**:n oletuksen (READ COMMITTED) sijaan? Yksi lyhyt syy.
 
 _Vastauksesi:_
-
+Kun halutaan varmistaa, että saman transaktion aikana luettu data ei muutu muiden transaktioiden vuoksi.
 ---
 
 ## Itsetarkistus (validointi)
