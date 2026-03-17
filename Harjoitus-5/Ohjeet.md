@@ -364,12 +364,26 @@ async Task RunAsync()
         {
             case "1":
                 // ========== TODO D1: Listaa kaikki opiskelijat ==========
-                Console.WriteLine("(D1 ei vielä toteutettu)");
+                var students = await context.Students
+                    .OrderBy(s => s.StudentId)
+                    .ToListAsync();
+
+                    foreach (var s in students)
+                    {
+                        Console.WriteLine($"{s.StudentId}: {s.FullName} ({s.Email})");
+                    }
                 break;
 
             case "2":
                 // ========== TODO D2: Listaa kurssit opettajien nimillä ==========
-                Console.WriteLine("(D2 ei vielä toteutettu)");
+                var courses = await context.Courses
+                    .Include(c => c.Teacher)
+                    .ToListAsync();
+
+                    foreach (var c in courses)
+                    {
+                        Console.WriteLine($"{c.CourseId}: {c.Title} ({c.Credits} op) - Opettaja: {c.Teacher.FullName}");
+                    }
                 break;
 
             case "3":
@@ -377,7 +391,20 @@ async Task RunAsync()
                 if (int.TryParse(Console.ReadLine(), out var studentId))
                 {
                     // ========== TODO D3: Listaa opiskelijan arvosanat ==========
-                    Console.WriteLine("(D3 ei vielä toteutettu)");
+                    Console.Write("Opiskelija-ID: ");
+                    if (int.TryParse(Console.ReadLine(), out var studentId))
+                    {
+                        // ========== TODO D3: Listaa opiskelijan arvosanat ==========
+                        var grades = await context.Grades
+                        .Where(g => g.StudentId == studentId)
+                        .Include(g => g.Course)
+                        .ToListAsync();
+
+                        foreach (var g in grades)
+                        {
+                            Console.WriteLine($"{g.Course.Title}: {g.GradeValue}");
+                        }
+                    }
                 }
                 else Console.WriteLine("Virheellinen ID.");
                 break;
@@ -387,29 +414,94 @@ async Task RunAsync()
                 if (int.TryParse(Console.ReadLine(), out var courseId))
                 {
                     // ========== TODO D4: Listaa kurssin ilmoittautumiset ==========
-                    Console.WriteLine("(D4 ei vielä toteutettu)");
+                    var enrollments = await context.Enrollments
+                    .Where(e => e.CourseId == courseId)
+                    .Include(e => e.Student)
+                    .ToListAsync();
+
+                    foreach (var e in enrollments)
+                    {
+                        Console.WriteLine($"{e.Student.StudentId}: {e.Student.FullName}");
+                    }
                 }
                 else Console.WriteLine("Virheellinen ID.");
                 break;
 
             case "5":
                 // ========== TODO D5: Listaa kaikki opettajat ==========
-                Console.WriteLine("(D5 ei vielä toteutettu)");
+                var teachers = await context.Teachers
+                    .OrderBy(t => t.TeacherId)
+                    .ToListAsync();
+
+                foreach (var t in teachers)
+                { 
+                    Console.WriteLine($"{t.TeacherId}: {t.FullName} ({t.Email})");
+                }
                 break;
 
             case "6":
                 // ========== TODO D6: Lisää uusi opiskelija ==========
-                Console.WriteLine("(D6 ei vielä toteutettu)");
+                Console.Write("Nimi: ");
+                var name = Console.ReadLine();
+
+                Console.Write("Email: ");
+                var email = Console.ReadLine();
+
+                var student = new Student
+                {
+                    FullName = name!,
+                    Email = email
+                };
+
+                context.Students.Add(student);
+                await context.SaveChangesAsync();
+
+                Console.WriteLine("Opiskelija lisätty.");
                 break;
 
             case "7":
                 // ========== TODO D7: Päivitä opiskelija ==========
-                Console.WriteLine("(D7 ei vielä toteutettu)");
+                Console.Write("Opiskelija ID: ");
+                if (int.TryParse(Console.ReadLine(), out var id))
+                {
+                    student = await context.Students.FindAsync(id);
+
+                    if (student == null)
+                    {
+                        Console.WriteLine("Opiskelijaa ei löytynyt.");
+                        return;
+                    }
+
+                    Console.Write("Uusi nimi: ");
+                    student.FullName = Console.ReadLine()!;
+
+                    Console.Write("Uusi email: ");
+                    student.Email = Console.ReadLine();
+
+                    await context.SaveChangesAsync();
+
+                    Console.WriteLine("Opiskelija päivitetty.");
+                }
                 break;
 
             case "8":
                 // ========== TODO D8: Poista opiskelija ==========
-                Console.WriteLine("(D8 ei vielä toteutettu)");
+                Console.Write("Opiskelija ID: ");
+                if (int.TryParse(Console.ReadLine(), out id))
+                {
+                    student = await context.Students.FindAsync(id);
+
+                    if (student == null)
+                    {
+                        Console.WriteLine("Opiskelijaa ei löytynyt.");
+                        return;
+                    }
+
+                    context.Students.Remove(student);
+                    await context.SaveChangesAsync();
+
+                    Console.WriteLine("Opiskelija poistettu.");
+                }
                 break;
 
             case "9":
@@ -417,7 +509,7 @@ async Task RunAsync()
                 break;
 
             default:
-                Console.WriteLine("Virheellinen valinta.");
+            Console.WriteLine("Virheellinen valinta.");
                 break;
         }
     }
@@ -427,6 +519,7 @@ async Task RunAsync()
 
 async Task SeedDatabaseAsync(UniversityDbContext context)
 {
+    context.ChangeTracker.Clear();
     Console.Write("Tämä poistaa kaiken datan ja täyttää tietokannan seed-datalla. Jatketaanko? (k/E): ");
     if (Console.ReadLine()?.Trim().ToLowerInvariant() != "k") return;
 
