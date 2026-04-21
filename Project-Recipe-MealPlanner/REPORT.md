@@ -1,5 +1,7 @@
 # Resepti- ja ateriasuunnittelutietokanta -projektin raportti
 
+GitHub: https://github.com/Jampe4/Tietokannat-26.git
+
 ## 1. Johdanto
 
 Tässä projektissa tein PostgreSQL-tietokannan reseptien ja ateriasuunnitelmien hallintaan. Tavoitteena oli suunnitella tietokanta itse alusta asti niin, että se täyttää tehtävän vaatimukset ja toimii oikein.
