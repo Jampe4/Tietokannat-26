@@ -1,0 +1,7 @@
+Oppimistehtava-4/TrailShopConsole/.vs/
+**/.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.log
