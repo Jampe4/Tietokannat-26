@@ -1,6 +1,6 @@
 # Resepti- ja ateriasuunnittelutietokanta -projektin raportti
 
-GitHub: https://github.com/Jampe4/Tietokannat-26.git
+GitHub: https://github.com/xamk-mire-classroom/tietokannat-26-harjoitukset-Jampe4.git
 
 ## 1. Johdanto
 
